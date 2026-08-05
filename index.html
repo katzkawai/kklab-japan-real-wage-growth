@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>日本の実質賃金は、なぜ35年間停滞しているのか — OECDデータで読む</title>
 <meta name="description" content="OECD「平均年間賃金」データ(1990–2025)を用いた日本・韓国・米国・英国・豪州の実質賃金の国際比較。グラフを読むうえでの統計上の注意点と、日本経済の停滞の分析。">
+<meta property="og:title" content="日本の実質賃金は、なぜ35年間停滞しているのか">
+<meta property="og:description" content="OECDデータ(1990–2025)で見る5か国比較。韓国+107.7%、米国+53.4%に対し日本は−1.2%。">
+<meta property="og:image" content="https://katzkawai.org/kklab-japan-real-wage-growth/japan_real_wage_growth.png">
 <style>
   :root {
     --bg: #ffffff;
@@ -15,6 +18,16 @@
     --border: #e3e6ec;
     --card: #f7f8fa;
     --negative: #b02a30;
+    --baseline: #c3c2b7;
+    --chart-surface: #ffffff;
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s3: #1baf7a;
+    --s4: #eda100;
+    --s5: #e87ba4;
+    --s6: #008300;
+    --s7: #4a3aa7;
+    --s8: #e34948;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -26,6 +39,16 @@
       --border: #2a3040;
       --card: #1b2029;
       --negative: #ef8a8e;
+      --baseline: #3a4152;
+      --chart-surface: #1b2029;
+      --s1: #3987e5;
+      --s2: #d95926;
+      --s3: #199e70;
+      --s4: #c98500;
+      --s5: #d55181;
+      --s6: #008300;
+      --s7: #9085e9;
+      --s8: #e66767;
     }
   }
   * { box-sizing: border-box; }
@@ -53,7 +76,7 @@
   p { margin: 0 0 1.2em; }
   a { color: var(--accent); }
   .stats {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
     margin: 32px 0 8px;
   }
   .stat {
@@ -63,20 +86,48 @@
   .stat .country { font-size: 13px; color: var(--muted); }
   .stat .value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .stat.jp { border-color: var(--accent); background: var(--accent-soft); }
-  .stat.jp .value { color: var(--negative); }
+  .stat .value.neg { color: var(--negative); }
   .stats-note { font-size: 12px; color: var(--muted); text-align: right; margin-bottom: 0; }
   @media (max-width: 620px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
-    .stats .stat.jp { grid-column: span 2; }
     h1 { font-size: 24px; }
   }
   figure { margin: 40px 0; }
   figure .chart-frame {
-    background: #ffffff; border: 1px solid var(--border); border-radius: 12px;
-    padding: 12px; overflow-x: auto;
+    background: var(--chart-surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 12px 10px;
   }
   figure img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
   figcaption { font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
+  .chart-head { padding: 0 6px 4px; }
+  .chart-head b { display: block; font-size: 16px; line-height: 1.5; }
+  .chart-head span { font-size: 12.5px; color: var(--muted); }
+  .chart-legend {
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    padding: 8px 6px 12px; font-size: 13px; color: var(--muted);
+  }
+  .chart-legend .key {
+    display: inline-block; width: 16px; height: 3px; border-radius: 1.5px;
+    vertical-align: middle; margin-right: 6px;
+  }
+  .chart-body { position: relative; outline: none; }
+  .chart-body:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 6px; }
+  .chart-body svg { display: block; width: 100%; height: auto; }
+  .chart-body svg text { font-family: inherit; }
+  .chart-tip {
+    position: absolute; display: none; pointer-events: none; z-index: 5;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 12.5px; line-height: 1.55;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.14); white-space: nowrap;
+  }
+  .chart-tip .yr { font-weight: 700; margin-bottom: 4px; }
+  .chart-tip .row { display: flex; align-items: center; gap: 7px; }
+  .chart-tip .k { width: 12px; height: 3px; border-radius: 1.5px; flex: none; }
+  .chart-tip .v {
+    font-weight: 700; font-variant-numeric: tabular-nums;
+    min-width: 58px; text-align: right;
+  }
+  .chart-tip .n { color: var(--muted); }
   .callout {
     background: var(--accent-soft); border-left: 4px solid var(--accent);
     border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 28px 0;
@@ -100,7 +151,7 @@
   ol.caveats p { margin: 0; font-size: 15px; }
   .table-wrap { overflow-x: auto; margin: 24px 0; }
   table {
-    border-collapse: collapse; width: 100%; min-width: 520px;
+    border-collapse: collapse; width: 100%; min-width: 660px;
     font-variant-numeric: tabular-nums; font-size: 14.5px;
   }
   th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); }
@@ -122,7 +173,7 @@
 <header class="hero">
   <p class="kicker">Data Note · OECD Average Annual Wages</p>
   <h1>日本の実質賃金は、なぜ35年間停滞しているのか</h1>
-  <p class="lede">OECD「平均年間賃金」(1990–2025年、実質・自国通貨建て)を用いて、日本・韓国・米国・英国・豪州の実質賃金の推移を比較した。結論を先に言えば、「日本だけが横ばい」という事実は指標の選び方によらず頑健である。ただし、その「停滞の幅」の読み取りには統計上の注意がいる。</p>
+  <p class="lede">OECD「平均年間賃金」(1990–2025年、実質・自国通貨建て)を用いて、日本を含む主要8か国(韓国・米国・英国・豪州・フランス・カナダ・イタリア)の実質賃金の推移を比較した。結論を先に言えば、35年間にわたり実質賃金がほぼ横ばいなのは日本とイタリアだけであり、日本の停滞という事実は指標の選び方によらず頑健である。ただし、その「停滞の幅」の読み取りには統計上の注意がいる。</p>
 </header>
 
 <div class="stats">
@@ -130,15 +181,35 @@
   <div class="stat"><div class="country">米国</div><div class="value">+53.4%</div></div>
   <div class="stat"><div class="country">英国</div><div class="value">+47.2%</div></div>
   <div class="stat"><div class="country">豪州</div><div class="value">+39.3%</div></div>
-  <div class="stat jp"><div class="country">日本</div><div class="value">−1.2%</div></div>
+  <div class="stat"><div class="country">カナダ</div><div class="value">+37.9%</div></div>
+  <div class="stat"><div class="country">フランス</div><div class="value">+34.6%</div></div>
+  <div class="stat jp"><div class="country">日本</div><div class="value neg">−1.2%</div></div>
+  <div class="stat"><div class="country">イタリア</div><div class="value neg">−2.1%</div></div>
 </div>
 <p class="stats-note">実質平均年間賃金の1990年比変化率(2025年時点)</p>
 
 <figure>
   <div class="chart-frame">
-    <img src="japan_real_wage_growth.png" alt="1990年を基準とした実質平均年間賃金の累積変化率の折れ線グラフ。韓国は+107.7%、米国は+53.4%、英国は+47.2%、豪州は+39.3%まで上昇する一方、日本はほぼゼロ近傍で横ばいのまま、2025年には−1.2%となっている。" width="1280" height="827">
+    <div class="chart-head">
+      <b>実質賃金が上がらないのは、主要国では日本とイタリアだけ</b>
+      <span>実質平均年間賃金の1990年比変化率(%、自国通貨建て・2025年基準価格)</span>
+    </div>
+    <div class="chart-legend" aria-hidden="true">
+      <span><span class="key" style="background:var(--s1)"></span>日本</span>
+      <span><span class="key" style="background:var(--s2)"></span>韓国</span>
+      <span><span class="key" style="background:var(--s3)"></span>米国</span>
+      <span><span class="key" style="background:var(--s4)"></span>英国</span>
+      <span><span class="key" style="background:var(--s5)"></span>豪州</span>
+      <span><span class="key" style="background:var(--s6)"></span>フランス</span>
+      <span><span class="key" style="background:var(--s7)"></span>カナダ</span>
+      <span><span class="key" style="background:var(--s8)"></span>イタリア</span>
+    </div>
+    <div class="chart-body" id="wagechart" tabindex="0" role="img" aria-label="実質平均年間賃金の1990年比変化率の折れ線グラフ。2025年時点で韓国+107.7%、米国+53.4%、英国+47.2%、豪州+39.3%、カナダ+37.9%、フランス+34.6%に対し、日本は−1.2%、イタリアは−2.1%。フォーカスして左右の矢印キーを押すと各年の値を表示できる。">
+      <noscript><img src="japan_real_wage_growth.png" alt="実質平均年間賃金の1990年比変化率の折れ線グラフ(静止画版)" width="1280" height="760"></noscript>
+      <div class="chart-tip" id="wagetip"></div>
+    </div>
   </div>
-  <figcaption>図1: 実質平均年間賃金の1990年比変化率(%、自国通貨建て・2025年基準価格)。出所: OECD, Average annual wages(データセット DSD_EARNINGS@AV_AN_WAGE)より作成。<a href="oecd_real_wage_growth_1990base.csv">データ(CSV)をダウンロード</a></figcaption>
+  <figcaption>図1: 実質平均年間賃金の1990年比変化率(%、自国通貨建て・2025年基準価格)。グラフに触れる(またはフォーカスして左右キー)と各年の値を表示。ドイツは再統一の影響でOECD系列が1991年開始のため対象外。出所: OECD, Average annual wages(データセット DSD_EARNINGS@AV_AN_WAGE)より作成。<a href="oecd_real_wage_growth_1990base.csv">データ(CSV)</a> · <a href="japan_real_wage_growth.png">静止画版(PNG)</a></figcaption>
 </figure>
 
 <h2>データについて</h2>
@@ -172,8 +243,8 @@
 <h2>ここからわかる日本経済の停滞</h2>
 
 <h3>停滞の輪郭 — 1997年が分水嶺</h3>
-<p>時系列を追うと、日本の実質賃金は1990年代前半には緩やかに上昇し、1997年に+3.7%のピークをつけた。転機はその直後である。1997〜98年の金融危機(北海道拓殖銀行・山一證券の破綻)を境に賃金は失速し、2002〜03年にはマイナス圏に沈む。以降四半世紀にわたり、日本の系列は−2%から+3%の狭いレンジを出ることがなかった。同じ期間に米英豪は40〜50%台、韓国は100%超まで積み上げている。</p>
-<p>これは「一度の不況で下がった」のではなく、「上がる力そのものが失われた」ことを示している。米英豪もリーマン・ショック(2008年)やインフレ局面(2022年)で足踏みや低下を経験しているが、その前後で成長トレンドに復帰している。日本だけが、そもそも復帰すべきトレンドを持たなかった。</p>
+<p>時系列を追うと、日本の実質賃金は1990年代前半には緩やかに上昇し、1997年に+3.7%のピークをつけた。転機はその直後である。1997〜98年の金融危機(北海道拓殖銀行・山一證券の破綻)を境に賃金は失速し、2002〜03年にはマイナス圏に沈む。以降四半世紀にわたり、日本の系列は−2%から+3%の狭いレンジを出ることがなかった。同じ期間に米国・英国・豪州・カナダ・フランスは35〜53%、韓国は100%超まで積み上げている。</p>
+<p>これは「一度の不況で下がった」のではなく、「上がる力そのものが失われた」ことを示している。他国もリーマン・ショック(2008年)やインフレ局面(2022年)で足踏みや低下を経験しているが、その前後で成長トレンドに復帰している。日本と、そしてイタリアだけが、そもそも復帰すべきトレンドを持たなかった。</p>
 
 <h3>停滞の構造 — 何が賃金を抑えたのか</h3>
 <p>本データと調査ノートの整理から、少なくとも三つの構造要因が読み取れる。</p>
@@ -183,25 +254,26 @@
 
 <h3>それでも残る事実</h3>
 <div class="callout">
-  <p>測定上の注意をすべて織り込んでもなお、「主要国の中で日本だけが35年間ほぼ横ばい」という定性的な結論は、分母(頭数・FTE・時間)やデフレーターの選択によらず頑健である。時間当たりベースで小幅プラスだとしても、同じ基準で測った他国との差は歴然としており、日本の一人当たり実質購買力の停滞は動かない。</p>
+  <p>測定上の注意をすべて織り込んでもなお、「比較8か国のうち35年間ほぼ横ばいなのは日本とイタリアだけ」という定性的な構図は、分母(頭数・FTE・時間)やデフレーターの選択によらず頑健である。時間当たりベースで小幅プラスだとしても、同じ基準で測った他の6か国との差は歴然としており、日本の一人当たり実質購買力の停滞は動かない。</p>
 </div>
+<p>比較を8か国に広げると、賃金停滞が日本固有の現象ではないこともわかる。イタリアも2025年時点で−2.1%と、35年前の水準を下回っている。低い生産性上昇率と硬直的な労働市場を抱える成熟経済に共通して現れる現象という側面がある一方、フランス(+34.6%)やカナダ(+37.9%)が着実に賃金を伸ばしていることは、先進国であること自体は停滞の説明にならないことも示している。</p>
 <p>厳密な議論のためには、頭数ベースの賃金変化を「時間当たり賃金要因」「労働時間要因」「構成要因」に寄与分解して示すことが望ましい。それが今後の課題である。</p>
 
 <h2>参考: 5年ごとの推移</h2>
 <div class="table-wrap">
   <table>
     <thead>
-      <tr><th>年</th><th>日本</th><th>韓国</th><th>米国</th><th>英国</th><th>豪州</th></tr>
+      <tr><th>年</th><th>日本</th><th>韓国</th><th>米国</th><th>英国</th><th>豪州</th><th>フランス</th><th>カナダ</th><th>イタリア</th></tr>
     </thead>
     <tbody>
-      <tr><td>1990</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td></tr>
-      <tr><td>1995</td><td>+2.9</td><td>+30.6</td><td>+2.6</td><td>+5.7</td><td>+2.9</td></tr>
-      <tr><td>2000</td><td>+2.2</td><td>+35.6</td><td>+17.9</td><td>+22.5</td><td>+13.5</td></tr>
-      <tr><td>2005</td><td>+2.9</td><td>+59.2</td><td>+23.4</td><td>+38.3</td><td>+22.4</td></tr>
-      <tr><td>2010</td><td>+1.3</td><td>+68.0</td><td>+29.7</td><td>+43.2</td><td>+30.8</td></tr>
-      <tr><td>2015</td><td>+0.5</td><td>+75.5</td><td>+35.8</td><td>+42.6</td><td>+36.2</td></tr>
-      <tr><td>2020</td><td>+1.0</td><td>+101.4</td><td>+50.2</td><td>+45.5</td><td>+41.3</td></tr>
-      <tr class="jp-row"><td>2025</td><td class="neg">−1.2</td><td>+107.7</td><td>+53.4</td><td>+47.2</td><td>+39.3</td></tr>
+      <tr><td>1990</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td></tr>
+      <tr><td>1995</td><td>+2.9</td><td>+30.6</td><td>+2.6</td><td>+5.7</td><td>+2.9</td><td>+5.6</td><td>+0.2</td><td class="neg">−4.2</td></tr>
+      <tr><td>2000</td><td>+2.2</td><td>+35.6</td><td>+17.9</td><td>+22.5</td><td>+13.5</td><td>+12.0</td><td>+10.1</td><td>+0.8</td></tr>
+      <tr><td>2005</td><td>+2.9</td><td>+59.2</td><td>+23.4</td><td>+38.3</td><td>+22.4</td><td>+20.4</td><td>+14.3</td><td>+3.2</td></tr>
+      <tr><td>2010</td><td>+1.3</td><td>+68.0</td><td>+29.7</td><td>+43.2</td><td>+30.8</td><td>+28.3</td><td>+24.1</td><td>+5.1</td></tr>
+      <tr><td>2015</td><td>+0.5</td><td>+75.5</td><td>+35.8</td><td>+42.6</td><td>+36.2</td><td>+32.4</td><td>+31.3</td><td>+1.9</td></tr>
+      <tr><td>2020</td><td>+1.0</td><td>+101.4</td><td>+50.2</td><td>+45.5</td><td>+41.3</td><td>+29.8</td><td>+38.2</td><td class="neg">−3.8</td></tr>
+      <tr class="jp-row"><td>2025</td><td class="neg">−1.2</td><td>+107.7</td><td>+53.4</td><td>+47.2</td><td>+39.3</td><td>+34.6</td><td>+37.9</td><td class="neg">−2.1</td></tr>
     </tbody>
   </table>
 </div>
@@ -214,9 +286,196 @@
     <li>OECD, "Comparable estimates of average wages per full-time equivalent employee" (methodological note)</li>
     <li>厚生労働省「毎月勤労統計調査」実質賃金指数の解説</li>
   </ul>
-  <p>2026年8月作成。本ページは調査ノート「日本の実質賃金停滞に関するノート — OECD平均年間賃金系列の定義と解釈上の留意点」(筆者作成、非公開)をもとに構成した。</p>
+  <p>2026年8月作成。本ページは調査ノート「日本の実質賃金停滞に関するノート — OECD平均年間賃金系列の定義と解釈上の留意点」(筆者作成、非公開)をもとに構成し、比較対象を同ノートの5か国からG7主要国を含む8か国に拡張した。</p>
 </footer>
 
 </main>
+<script>
+(function () {
+  var YEARS = [], i;
+  for (i = 1990; i <= 2025; i++) YEARS.push(i);
+  var SERIES = [
+    { name: '日本',     color: 'var(--s1)', v: [0.0,1.3,1.5,0.7,1.7,2.9,3.3,3.7,2.1,1.2,2.2,0.9,-1.2,-1.0,0.4,2.9,2.9,3.2,2.8,1.3,1.3,1.6,1.8,2.4,1.4,0.5,1.1,0.6,2.0,2.5,1.0,2.0,0.7,-1.6,-0.7,-1.2] },
+    { name: '韓国',     color: 'var(--s2)', v: [0.0,4.2,9.1,15.8,18.5,30.6,36.8,34.0,32.8,34.6,35.6,40.7,45.7,50.9,54.3,59.2,61.5,64.9,64.5,64.7,68.0,70.0,67.0,70.8,71.1,75.5,80.4,84.1,90.4,96.9,101.4,102.9,99.0,100.7,106.5,107.7] },
+    { name: '米国',     color: 'var(--s3)', v: [0.0,0.7,3.0,2.4,2.0,2.6,4.1,6.7,11.1,14.0,17.9,18.8,19.7,21.0,23.2,23.4,25.2,27.6,27.3,28.5,29.7,29.9,31.0,30.4,32.4,35.8,36.0,37.5,39.2,41.7,50.2,52.9,48.5,47.9,50.9,53.4] },
+    { name: '英国',     color: 'var(--s4)', v: [0.0,0.2,2.2,3.9,5.7,5.7,5.7,9.8,11.4,16.9,22.5,27.7,28.9,33.0,36.9,38.3,40.7,46.9,42.9,42.5,43.2,40.3,39.2,40.1,40.7,42.6,44.3,45.3,45.6,47.6,45.5,47.6,44.6,43.5,46.2,47.2] },
+    { name: '豪州',     color: 'var(--s5)', v: [0.0,-0.4,1.6,2.6,3.2,2.9,5.8,9.1,10.7,13.2,13.5,14.6,15.7,17.3,21.0,22.4,23.2,26.7,27.6,26.3,30.8,35.2,36.1,35.7,37.0,36.2,36.9,36.5,37.0,38.3,41.3,42.9,39.7,38.2,37.8,39.3] },
+    { name: 'フランス', color: 'var(--s6)', v: [0.0,1.2,2.2,3.5,4.0,5.6,6.0,7.3,8.8,11.1,12.0,12.7,15.8,16.9,18.7,20.4,21.7,22.3,22.0,26.0,28.3,28.5,29.3,30.5,31.4,32.4,33.8,35.6,35.0,36.4,29.8,35.4,35.9,32.7,33.2,34.6] },
+    { name: 'カナダ',   color: 'var(--s7)', v: [0.0,0.4,1.8,1.6,0.5,0.2,1.1,4.2,6.0,6.8,10.1,9.6,8.7,8.8,11.1,14.3,17.8,21.0,23.1,23.9,24.1,25.8,27.5,28.8,30.3,31.3,28.8,30.8,33.2,33.9,38.2,38.9,36.7,36.1,37.6,37.9] },
+    { name: 'イタリア', color: 'var(--s8)', v: [0.0,0.8,0.7,-0.8,-2.1,-4.2,-3.4,-0.7,-0.3,0.8,0.8,1.5,0.6,0.1,2.1,3.2,3.8,3.6,3.6,4.2,5.1,3.5,0.2,0.5,1.0,1.9,2.3,1.4,0.8,1.1,-3.8,1.1,-1.9,-4.1,-3.2,-2.1] }
+  ];
+  // 直接ラベル(4系列以内): 極値と主役。他は凡例+ツールチップが担う
+  var END_LABELS = [
+    { s: 1, value: true },             // 韓国
+    { s: 2, value: false },            // 米国
+    { s: 0, value: true, labY: 8 },    // 日本(リーダー線で上へ)
+    { s: 7, value: true, labY: -13 }   // イタリア(リーダー線で下へ)
+  ];
+  var Y0 = -20, Y1 = 120, N = YEARS.length;
+  var body = document.getElementById('wagechart');
+  var tip = document.getElementById('wagetip');
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = null, geo = null, curIdx = -1;
+
+  function el(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag), k;
+    for (k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function fmt(v) {
+    var sign = v > 0 ? '+' : (v < 0 ? '−' : '');
+    return sign + Math.abs(v).toFixed(1) + '%';
+  }
+
+  function render() {
+    var W = Math.max(300, body.clientWidth);
+    var narrow = W < 620;
+    var H = narrow ? 400 : 520;
+    var m = { t: 14, r: narrow ? 20 : 116, b: 30, l: 42 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    function x(yr) { return m.l + (yr - 1990) / 35 * pw; }
+    function y(v) { return m.t + (Y1 - v) / (Y1 - Y0) * ph; }
+
+    if (svg) svg.remove();
+    svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true' });
+    geo = { W: W, H: H, m: m, pw: pw, x: x, y: y };
+
+    var t;
+    for (t = Y0; t <= Y1; t += 20) {
+      el('line', { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t),
+        stroke: t === 0 ? 'var(--baseline)' : 'var(--border)',
+        'stroke-width': t === 0 ? 1.2 : 1 }, svg);
+      el('text', { x: m.l - 8, y: y(t) + 4, 'text-anchor': 'end',
+        'font-size': 11.5, fill: 'var(--muted)' }, svg).textContent = t;
+    }
+    for (t = 1990; t <= 2025; t += (narrow ? 10 : 5)) {
+      el('text', { x: x(t), y: H - m.b + 20, 'text-anchor': 'middle',
+        'font-size': 11.5, fill: 'var(--muted)' }, svg).textContent = t;
+    }
+
+    [1, 2, 3, 4, 5, 6, 7, 0].forEach(function (si) {  // 日本を最後に描き最前面へ
+      var s = SERIES[si], d = '';
+      s.v.forEach(function (v, i) {
+        d += (i ? 'L' : 'M') + x(YEARS[i]).toFixed(1) + ' ' + y(v).toFixed(1);
+      });
+      el('path', { d: d, fill: 'none', stroke: s.color, 'stroke-width': 2,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+      el('circle', { cx: x(2025), cy: y(s.v[N - 1]), r: 4.5, fill: s.color,
+        stroke: 'var(--chart-surface)', 'stroke-width': 2 }, svg);
+    });
+
+    if (!narrow) {
+      END_LABELS.forEach(function (L) {
+        var s = SERIES[L.s], vEnd = s.v[N - 1];
+        var ly = (L.labY === undefined) ? vEnd : L.labY;
+        if (L.labY !== undefined) {
+          el('line', { x1: x(2025) + 6, y1: y(vEnd), x2: W - m.r + 8, y2: y(ly),
+            stroke: 'var(--muted)', 'stroke-width': 0.8 }, svg);
+        }
+        el('text', { x: W - m.r + 12, y: y(ly) + (L.value ? 0 : 4),
+          'font-size': 13, 'font-weight': 700, fill: 'var(--fg)' },
+          svg).textContent = s.name;
+        if (L.value) {
+          el('text', { x: W - m.r + 12, y: y(ly) + 15,
+            'font-size': 12, fill: 'var(--muted)' }, svg).textContent = fmt(vEnd);
+        }
+      });
+    }
+
+    geo.xhair = el('line', { y1: m.t, y2: H - m.b, stroke: 'var(--muted)',
+      'stroke-width': 1, visibility: 'hidden' }, svg);
+    geo.dots = SERIES.map(function (s) {
+      return el('circle', { r: 4, fill: s.color, stroke: 'var(--chart-surface)',
+        'stroke-width': 2, visibility: 'hidden' }, svg);
+    });
+    body.insertBefore(svg, tip);
+    hide();
+  }
+
+  function hide() {
+    curIdx = -1;
+    tip.style.display = 'none';
+    if (geo) {
+      geo.xhair.setAttribute('visibility', 'hidden');
+      geo.dots.forEach(function (d) { d.setAttribute('visibility', 'hidden'); });
+    }
+  }
+
+  function show(idx, py) {
+    curIdx = idx;
+    var yr = YEARS[idx], xp = geo.x(yr);
+    geo.xhair.setAttribute('x1', xp);
+    geo.xhair.setAttribute('x2', xp);
+    geo.xhair.setAttribute('visibility', 'visible');
+    SERIES.forEach(function (s, si) {
+      geo.dots[si].setAttribute('cx', xp);
+      geo.dots[si].setAttribute('cy', geo.y(s.v[idx]));
+      geo.dots[si].setAttribute('visibility', 'visible');
+    });
+
+    while (tip.firstChild) tip.removeChild(tip.firstChild);
+    var hd = document.createElement('div');
+    hd.className = 'yr';
+    hd.textContent = yr + '年(1990年比)';
+    tip.appendChild(hd);
+    SERIES.map(function (s) { return { name: s.name, color: s.color, v: s.v[idx] }; })
+      .sort(function (a, b) { return b.v - a.v; })
+      .forEach(function (r) {
+        var row = document.createElement('div'); row.className = 'row';
+        var k = document.createElement('span'); k.className = 'k';
+        k.style.background = r.color;
+        var v = document.createElement('span'); v.className = 'v';
+        v.textContent = fmt(r.v);
+        var n = document.createElement('span'); n.className = 'n';
+        n.textContent = r.name;
+        row.appendChild(k); row.appendChild(v); row.appendChild(n);
+        tip.appendChild(row);
+      });
+    tip.style.display = 'block';
+
+    var rect = svg.getBoundingClientRect();
+    var sc = rect.width / geo.W;
+    var xr = xp * sc;
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = xr < rect.width * 0.55 ? xr + 14 : xr - tw - 14;
+    left = Math.max(4, Math.min(left, rect.width - tw - 4));
+    var top = (py === undefined) ? geo.m.t * sc + 10 : py - th - 14;
+    if (top < 4) top = (py === undefined) ? 4 : py + 16;
+    top = Math.max(4, Math.min(top, rect.height - th - 4));
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+
+  body.addEventListener('pointermove', function (e) {
+    var rect = svg.getBoundingClientRect();
+    var sc = geo.W / rect.width;
+    var xp = (e.clientX - rect.left) * sc;
+    var idx = Math.round((xp - geo.m.l) / geo.pw * 35);
+    show(Math.max(0, Math.min(35, idx)), e.clientY - rect.top);
+  });
+  body.addEventListener('pointerleave', hide);
+  body.addEventListener('keydown', function (e) {
+    var idx = curIdx < 0 ? N - 1 : curIdx;
+    if (e.key === 'ArrowLeft') idx--;
+    else if (e.key === 'ArrowRight') idx++;
+    else if (e.key === 'Home') idx = 0;
+    else if (e.key === 'End') idx = N - 1;
+    else if (e.key === 'Escape') { hide(); return; }
+    else return;
+    e.preventDefault();
+    show(Math.max(0, Math.min(N - 1, idx)));
+  });
+  body.addEventListener('focus', function () { if (curIdx < 0) show(N - 1); });
+  body.addEventListener('blur', hide);
+
+  var raf = 0;
+  window.addEventListener('resize', function () {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(render);
+  });
+  render();
+})();
+</script>
 </body>
 </html>
